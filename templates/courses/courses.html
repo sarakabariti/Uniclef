@@ -49,29 +49,27 @@
                   <div class="course-heading text-center">
                     <h4 class="text-primary">{{ course.title }}</h4>
                     <p>
-                      <i class="fas fa-map-marker text-secondary"></i> {{ course.city }} {{ course.state }}, {{ course.zipcode }}</p>
+                      <i class="fas fa-map-marker text-secondary"></i> {{ course.difficulty }} {{ course.duration }}, {{ course.category }}</p>
                   </div>
                   <hr>
                   <div class="row py-2 text-secondary">
                     <div class="col-6">
-                      <i class="fas fa-th-large"></i> Sqft: {{ course.sqft }}</div>
+                      <i class="fas fa-th-large"></i> Difficulty: {{ course.difficulty }}</div>
                     <div class="col-6">
-                      <i class="fas fa-car"></i> Garage: {{ course.garage }}</div>
+                      <i class="fas fa-car"></i> Duration: {{ course.duration }}</div>
                   </div>
                   <div class="row py-2 text-secondary">
                     <div class="col-6">
-                      <i class="fas fa-bed"></i> Bedrooms: {{ course.bedrooms }}</div>
-                    <div class="col-6">
-                      <i class="fas fa-bath"></i> Bathrooms: {{ course.bathrooms }}</div>
+                      <i class="fas fa-bed"></i> Category: {{ course.category }}</div>
                   </div>
                   <hr>
                   <div class="row py-2 text-secondary">
                     <div class="col-12">
-                      <i class="fas fa-user"></i> {{ course.realtor }}</div>
+                      <i class="fas fa-user"></i> {{ course.instructor }}</div>
                   </div>
                   <div class="row text-secondary pb-2">
                     <div class="col-6">
-                      <i class="fas fa-clock"></i> {{ course.list_date | timesince }}</div>
+                      <i class="fas fa-clock"></i> {{ course.release_date | timesince }}</div>
                   </div>
                   <hr>
                   <a href="{% url 'course' course.id %}" class="btn btn-primary btn-block">More Info</a>
