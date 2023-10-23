@@ -8,7 +8,7 @@ class Instructor(models.Model):
     description = models.TextField(blank=True)
     email = models.EmailField(max_length=50)
     phone_number = models.CharField(max_length=20)
-    courses = models.ForeignKey(Course, on_delete=models.DO_NOTHING) 
+    courses = models.ForeignKey('courses.Course', on_delete=models.DO_NOTHING, related_name='instructors') 
     is_mvp = models.BooleanField(default=False)
 
     def __str__(self):
