@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from courses.choices import price_choices, category_choices, difficulty_choices
 
 from courses.models import Course
 from instructors.models import Instructor
