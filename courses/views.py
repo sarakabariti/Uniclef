@@ -41,7 +41,7 @@ def search(request):
     
     # Difficulty
     if 'difficulty' in request.GET:
-        difficulty = request.GET['diffuclty']
+        difficulty = request.GET['difficulty']
         if difficulty:
             queryset_list = queryset_list.filter(difficulty__iexact=difficulty)
 
