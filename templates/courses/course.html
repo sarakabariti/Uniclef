@@ -11,7 +11,7 @@
         <div class="col-md-12">
           <h1 class="display-4">{{ course.title }}</h1>
           <p class="lead">
-            <i class="fas fa-map-marker"></i> {{ course.difficulty }} {{ course.duration }}, {{ course.category }}</p>
+            <i class="fas fa-info"></i> {{ course.difficulty }} {{ course.duration }} Weeks {{ course.category }}</p>
         </div>
       </div>
     </div>
@@ -55,7 +55,7 @@
                   <span class="float-right">${{ course.price | intcomma }}</span>
                 </li>
                 <li class="list-group-item text-secondary">
-                  <i class="fas fa-car"></i> Category:
+                  <i class="fas fa-tasks"></i> Category:
                   <span class="float-right">{{ course.category }}
                   </span>
                 </li>
@@ -64,11 +64,11 @@
             <div class="col-md-6">
               <ul class="list-group list-group-flush">
                 <li class="list-group-item text-secondary">
-                  <i class="fas fa-th-large"></i> Difficulty:
-                  <span class="float-right">{{ course.sqft }}</span>
+                  <i class="fas fa-bars"></i> Difficulty:
+                  <span class="float-right">{{ course.difficulty }}</span>
                 </li>
                 <li class="list-group-item text-secondary">
-                  <i class="fas fa-square"></i> Duration
+                  <i class="fa fa-hourglass-half" aria-hidden="true"></i> Duration
                   <span class="float-right">{{ course.duration }} Weeks
                   </span>
                 </li>
@@ -77,7 +77,7 @@
                   <span class="float-right">{{ course.release_date }}</span>
                 </li>
                 <li class="list-group-item text-secondary">
-                  <i class="fas fa-bed"></i> Instructor:
+                  <i class="fas fa-user"></i> Instructor:
                   <span class="float-right">{{ course.instructor }}
                   </span>
                 </li>
@@ -129,7 +129,7 @@
             <input type="hidden" name="instructor_email" value="{{ course.instructor.email }}">
             <input type="hidden" name="course_id" value="{{ course.id }}">
             <div class="form-group">
-              <label for="course_name" class="col-form-label">course:</label>
+              <label for="course_name" class="col-form-label">Course:</label>
               <input type="text" name="course" class="form-control" value="{{ course.title }}">
             </div>
             <div class="form-group">

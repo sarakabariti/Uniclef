@@ -10,7 +10,7 @@
       <div class="row text-center">
         <div class="col-md-12">
           <h1 class="display-4">About Uniclef</h1>
-          <p class="lead">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sunt, pariatur!</p>
+          <p class="lead">Discover the Story of Uniclef!</p>
         </div>
       </div>
     </div>
@@ -35,12 +35,14 @@
     <div class="container">
       <div class="row">
         <div class="col-md-8">
-          <h2>We Offer The Perfect Course</h2>
-          <p class="lead">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sunt, pariatur!</p>
+          <h2>Unlock Your Musical Potential</h2>
+          <p class="lead">Join Uniclef for an Inspirational Music Journey</p>
           <img src="{% static 'img/about.jpg' %}" alt="">
-          <p class="mt-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis esse officia repudiandae ad saepe ex, amet
-            neque quod accusamus rem quia magnam magni dolorum facilis ullam minima perferendis? Exercitationem at quaerat
-            commodi id libero eveniet harum perferendis laborum molestias quia.</p>
+          <p class="mt-4">At Uniclef, we are passionate about music education. Our mission is to help you explore 
+            and develop your musical talents. With dedicated instructors, a supportive community, and top-quality 
+            resources, we offer a comprehensive platform to elevate your music skills. Whether you're a beginner 
+            or an experienced musician, Uniclef has something for you. Let's embark on this harmonious journey 
+            together!</p>
         </div>
         <div class="col-md-4">
           {% if mvp_instructors %}
@@ -63,8 +65,8 @@
 
   <!-- Work -->
   <section id="work" class="bg-dark text-white text-center">
-    <h2 class="display-4">We Work For You</h2>
-    <h4>Lorem ipsum dolor sit amet consectetur adipisicing elit. Autem velit aperiam, unde aliquid at similique!</h4>
+    <h2 class="display-4">We're Dedicated to Your Musical Journey</h2>
+    <h4>Explore Our Featured Courses and Unleash Your Creativity!</h4>
     <hr>
     <a href="{% url 'courses' %}" class="btn btn-secondary text-white btn-lg">View Our Featured Courses</a>
   </section>
@@ -72,7 +74,7 @@
   <!-- Team -->
   <section id="team" class="py-5">
     <div class="container">
-      <h2 class="text-center">Our Team</h2>
+      <h2 class="text-center">Meet Our Team</h2>
       <div class="row text-center">
         {% if instructors %}
           {% for instructor in instructors %}
@@ -80,10 +82,10 @@
               <img src="{{ instructor.photo.url }}" alt="" class="rounded-circle mb-3">
               <h4>{{ instructor.name }}</h4>
               <p class="text-success">
-                <i class="fas fa-award text-success mb-3"></i> instructor</p>
+                <i class="fas fa-award text-success mb-3"></i> Instructor</p>
               <hr>
               <p>
-                <i class="fas fa-phone"></i> {{ instructor.phone }}</p>
+                <i class="fas fa-phone"></i> {{ instructor.phone_number }}</p>
               <p>
                 <i class="fas fa-envelope-open"></i> {{ instructor.email }}</p>
             </div>

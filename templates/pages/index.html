@@ -43,9 +43,9 @@
               <!-- Form Row 2 -->
               <div class="form-row">
                 <div class="col-md-6 mb-3">
-                  <label class="sr-only">categorys</label>
-                  <select name="categorys" class="form-control">
-                    <option selected="true" disabled="disabled">categorys (All)</option>
+                  <label class="sr-only">categories</label>
+                  <select name="categories" class="form-control">
+                    <option selected="true" disabled="disabled">Categories (All)</option>
                     {% for key,value in category_choices.items %}
                       <option value="{{ key }}">{{ value }}</option>
                     {% endfor %}
@@ -91,12 +91,12 @@
                   <div class="course-heading text-center">
                     <h4 class="text-primary">{{ course.title }}</h4>
                     <p>
-                      <i class="fas fa-map-marker text-secondary"></i> {{ course.difficulty }} {{ course.duration }}, {{ course.category }}</p>
+                      <i class="fas fa-info text-secondary"></i> {{ course.difficulty }} {{ course.duration }} Weeks {{ course.category }}</p>
                   </div>
                   <hr>
                   <div class="row py-2 text-secondary">
                     <div class="col-6">
-                      <i class="fas fa-bed"></i> Categories: {{ course.categories }}</div>
+                      <i class="fas fa-tasks"></i> Categories: {{ course.category }}</div>
                   </div>
                   <hr>
                   <div class="row py-2 text-secondary">
@@ -130,22 +130,25 @@
           <i class="fas fa-comment fa-4x mr-4"></i>
           <hr>
           <h3>Expert Advice</h3>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Incidunt, debitis nam! Repudiandae, provident iste consequatur
-            hic dignissimos ratione ea quae.</p>
+          <p>Our instructors are experts in the music field. They have composed some of the most renowned 
+            melodies and worked with top artists in the industry. With years of experience, their guidance 
+            will help you reach new heights in your musical journey!</p>
         </div>
         <div class="col-md-4">
-          <i class="fas fa-home fa-4x mr-4"></i>
+          <i class="fas fa-certificate fa-4x mr-4"></i>
           <hr>
           <h3>Certification</h3>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Incidunt, debitis nam! Repudiandae, provident iste consequatur
-            hic dignissimos ratione ea quae.</p>
+          <p>At Uniclef, we take your musical education seriously. Earn certifications that validate your skills 
+            and knowledge. These credentials are recognized in the industry, opening up doors to exciting 
+            opportunities in the world of music.</p>
         </div>
         <div class="col-md-4">
-          <i class="fas fa-suitcase fa-4x mr-4"></i>
+          <i class="fas fa-users fa-4x mr-4"></i>
           <hr>
           <h3>Collaboration</h3>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Incidunt, debitis nam! Repudiandae, provident iste consequatur
-            hic dignissimos ratione ea quae.</p>
+          <p>Join a community of music enthusiasts and aspiring artists. Collaborate with fellow learners and instructors 
+            to create amazing music projects. Build connections, share ideas, and make music that resonates with the world. 
+            Your creative journey starts here.</p>
         </div>
       </div>
     </div>
