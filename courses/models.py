@@ -2,11 +2,18 @@ from django.db import models
 from datetime import datetime
 from instructors.models import Instructor
 
+class Category(models.Model):
+    category_tag = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.category_tag
+    
 class Course(models.Model):
     DIFFICULTY_CHOICES = (
-        ('beginner', 'Beginner'),
-        ('intermediate', 'Intermediate'),
-        ('advanced', 'Advanced'),
+        ('Beginner', 'Beginner'),
+        ('Intermediate', 'Intermediate'),
+        ('Advanced', 'Advanced'),
     )
 
     title = models.CharField(max_length=255)
@@ -17,6 +24,15 @@ class Course(models.Model):
     instructor = models.ForeignKey(Instructor, on_delete=models.DO_NOTHING)  
     release_date = models.DateTimeField(default=datetime.now, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    category = models.ManyToManyField(Category, through='CourseCategory')
 
     def __str__(self):
         return self.title
+
+
+class CourseCategory(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.course.title} - {self.category.category_tag}"

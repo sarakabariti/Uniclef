@@ -39,7 +39,7 @@
           {% for course in courses %}
           <div class="col-md-6 col-lg-4 mb-4">
               <div class="card course-preview">
-                <img class="card-img-top" src="{{ course.photo_main.url }}" alt="">
+                <img class="card-img-top" src="{{ course.photo.url }}" alt="">
                 <div class="card-img-overlay">
                   <h2>
                     <span class="badge badge-secondary text-white">${{ course.price | intcomma }}</span>
@@ -49,7 +49,7 @@
                   <div class="course-heading text-center">
                     <h4 class="text-primary">{{ course.title }}</h4>
                     <p>
-                      <i class="fas fa-info text-secondary"></i> {{ course.difficulty }} {{ course.duration }} Weeks {{ course.category }}</p>
+                      <i class="fas fa-info text-secondary"></i> {{ course.difficulty }} {{ course.duration }} Weeks</p>
                   </div>
                   <hr>
                   <div class="row py-2 text-secondary">
@@ -60,7 +60,12 @@
                   </div>
                   <div class="row py-2 text-secondary">
                     <div class="col-6">
-                      <i class="fas fa-tasks"></i> Category: {{ course.category }}</div>
+                      <i class="fas fa-tasks"></i> Category:  
+                      <ul>
+                        {% for category in course.category.all %}
+                            <li>{{ category.category_tag }}</li>
+                        {% endfor %}
+                    </ul></div>
                   </div>
                   <hr>
                   <div class="row py-2 text-secondary">

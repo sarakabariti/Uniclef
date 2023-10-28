@@ -11,7 +11,7 @@
         <div class="col-md-12">
           <h1 class="display-4">{{ course.title }}</h1>
           <p class="lead">
-            <i class="fas fa-info"></i> {{ course.difficulty }} {{ course.duration }} Weeks {{ course.category }}</p>
+            <i class="fas fa-info"></i> {{ course.difficulty }} {{ course.duration }} Weeks</p>
         </div>
       </div>
     </div>
@@ -44,7 +44,7 @@
       <div class="row">
         <div class="col-md-9">
           <!-- Home Main Image -->
-          <img src="{{ course.photo_main.url }}" alt="" class="img-main img-fluid mb-3">
+          <img src="{{ course.photo.url }}" alt="" class="img-main img-fluid mb-3">
 
           <!-- Fields -->
           <div class="row mb-5 fields">
@@ -56,7 +56,11 @@
                 </li>
                 <li class="list-group-item text-secondary">
                   <i class="fas fa-tasks"></i> Category:
-                  <span class="float-right">{{ course.category }}
+                  <span class="float-right"> <ul>
+                    {% for category in course.category.all %}
+                        <li>{{ category.category_tag }}</li>
+                    {% endfor %}
+                </ul>
                   </span>
                 </li>
               </ul>
