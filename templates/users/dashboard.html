@@ -37,23 +37,27 @@
       <div class="row">
         <div class="col-md-12">
           <h2>Welcome {{ user.first_name }}</h2>
-          {% if contacts %}
+          <a class="btn btn-primary" href="{% url 'payment_history' %}">Payment History</a>
+          {% if enrollments %}
             <p>Here are the courses that you have enrolled in</p>
             <table class="table">
               <thead>
                 <tr>
                   <th scope="col">#</th>
                   <th scope="col">Course</th>
-                  <th></th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {% for contact in contacts %}
+                {% for enrollment in enrollments %}
                   <tr>
-                    <td>{{ contact.id }}</td>
-                    <td>{{ contact.course }}</td>
+                    <td>{{ enrollment.id }}</td>
+                    <td>{{ enrollment.course.title }}</td>
                     <td>
-                      <a class="btn btn-light" href="{% url 'course' contact.course_id %}">View Course</a>
+                      <a class="btn btn-light" href="{% url 'course' enrollment.course.id %}">View Course</a>
+                      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#refundModal{{ enrollment.id }}">
+                        Request Refund
+                      </button>
                     </td>
                   </tr>
                 {% endfor %}
@@ -66,4 +70,43 @@
       </div>
     </div>
   </section>
+  
+
+  <script>
+    $(document).ready(function() {
+        $("#refund-request-button").click(function() {
+            $("#refundRequestModal").modal("show");
+        });
+    });
+</script>
+<!-- This code creates a modal for each enrolled course -->
+{% for enrollment in enrollments %}
+<div class="modal fade" id="refundModal{{ enrollment.id }}" tabindex="-1" role="dialog" aria-labelledby="refundModalLabel{{ enrollment.id }}" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="refundModalLabel{{ enrollment.id }}">Request Refund</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="refund-request-form{{ enrollment.id }}" method="post" action="{% url 'refund_request' enrollment_id=enrollment.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+
+          <div class="form-group">
+            <label for="refund-reason{{ enrollment.id }}">Reason for Refund</label>
+            <input type="text" id="refund-reason{{ enrollment.id }}" name="reason" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
   {% endblock %}

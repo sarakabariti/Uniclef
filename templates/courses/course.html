@@ -106,57 +106,37 @@
               <h6 class="text-secondary">{{ course.instructor }}</h6>
             </div>
           </div>
-          <button class="btn-primary btn-block btn-lg" data-toggle="modal" data-target="#inquiryModal">Make An Inquiry</button>
+          <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Enroll in this Course</h5>
+            </div>
+          </div>
+          <button id="enroll-button" class="btn btn-primary btn-block btn-lg" >Enroll</button>
+          <div id="payment-modal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <form method="post" id="payment-form">
+                {% csrf_token %}
+                {{ payment_form.as_p }}
+                <input type="submit" value="Pay">
+              </form>
+            </div>
+          </div>
+          <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script>
+                $(document).ready(function() {
+                    $('#enroll-button').click(function() {
+                        $('#payment-modal').show();
+                    });
+
+                    $('.close').click(function() {
+                        $('#payment-modal').hide();
+                    });
+                });
+            </script>
+        </div>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- Inquiry Modal -->
-  <div class="modal fade" id="inquiryModal" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="inquiryModalLabel">Make An Inquiry</h5>
-          <button type="button" class="close" data-dismiss="modal">
-            <span>&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form action="{% url 'contact' %}" method="POST">
-            {% csrf_token %}
-            {% if user.is_authenticated %}
-              <input type="hidden" name="user_id" value="{{ user.id }}">
-            {% else %}
-              <input type="hidden" name="user_id" value="0">
-            {% endif %}
-            <input type="hidden" name="instructor_email" value="{{ course.instructor.email }}">
-            <input type="hidden" name="course_id" value="{{ course.id }}">
-            <div class="form-group">
-              <label for="course_name" class="col-form-label">Course:</label>
-              <input type="text" name="course" class="form-control" value="{{ course.title }}">
-            </div>
-            <div class="form-group">
-              <label for="name" class="col-form-label">Name:</label>
-              <input type="text" name="name" class="form-control" {% if user.is_authenticated %} value="{{ user.first_name }} {{ user.last_name }}" {% endif %} required>
-            </div>
-            <div class="form-group">
-              <label for="email" class="col-form-label">Email:</label>
-              <input type="email" name="email" class="form-control" {% if user.is_authenticated %} value="{{ user.email }}" {% endif %} required>
-            </div>
-            <div class="form-group">
-              <label for="phone" class="col-form-label">Phone:</label>
-              <input type="text" name="phone" class="form-control">
-            </div>
-            <div class="form-group">
-              <label for="message" class="col-form-label">Message:</label>
-              <textarea name="message" class="form-control"></textarea>
-            </div>
-            <hr>
-            <input type="submit" value="Send" class="btn btn-block btn-secondary">
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
 {% endblock %}

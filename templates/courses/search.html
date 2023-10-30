@@ -118,9 +118,14 @@
                   </div>
                   <div class="row py-2 text-secondary">
                     <div class="col-6">
-                      <i class="fas fa-bed"></i> Categories: {{ course.category }}</div>
+                      <i class="fas fa-tasks"></i> Categories:  
+                      <ul>
+                        {% for category in course.category.all %}
+                            <li>{{ category.category_tag }}</li>
+                        {% endfor %}
+                    </ul></div>
                     <div class="col-6">
-                      <i class="fas fa-bath"></i> Bathrooms: {{ course.bathrooms }}</div>
+                      <i class="fas fa-bars"></i> Difficulty: {{ course.difficulty }}</div>
                   </div>
                   <hr>
                   <div class="row py-2 text-secondary">
@@ -132,7 +137,7 @@
                       <i class="fas fa-clock"></i> {{ course.release_date | timesince }}</div>
                   </div>
                   <hr>
-                  <a href="{% url 'course' course.id %}" class="btn btn-primary btn-block">More Info</a>
+                  <a class="btn btn-primary btn-block" href="{% url 'course' course.id %}">More Info</a>
                 </div>
               </div>
             </div>

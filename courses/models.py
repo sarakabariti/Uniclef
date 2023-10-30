@@ -11,9 +11,9 @@ class Category(models.Model):
     
 class Course(models.Model):
     DIFFICULTY_CHOICES = (
-        ('Beginner', 'Beginner'),
-        ('Intermediate', 'Intermediate'),
-        ('Advanced', 'Advanced'),
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
     )
 
     title = models.CharField(max_length=255)
