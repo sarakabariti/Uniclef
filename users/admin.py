@@ -36,6 +36,8 @@ class EnrollmentAdmin(admin.ModelAdmin):
 @admin.register(Refund)
 class RefundAdmin(admin.ModelAdmin):
     list_display = ('enrollment_id', 'request_date', 'status')
+    search_fields = ('enrollment_id', 'request_date', 'reason', 'status')
+    list_per_page = 25
 
 @admin.register(StudentProgress)
 class StudentProgress(admin.ModelAdmin):

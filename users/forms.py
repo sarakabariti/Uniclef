@@ -14,6 +14,3 @@ class PaymentMethodForm(forms.Form):
     expiration_month = forms.IntegerField(min_value=1, max_value=12, label='Expiration Month')
     expiration_year = forms.IntegerField(min_value=2023, label='Expiration Year')
     cvv = forms.IntegerField(min_value=100, label='CVV')
-
-class RefundRequestForm(forms.Form):
-    reason = forms.CharField(widget=forms.Textarea)

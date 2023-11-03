@@ -151,3 +151,7 @@ from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
     messages.ERROR:'danger',
 }
+
+# Stripe
+STRIPE_PUBLISHABLE_KEY = 'pk_test_51O87oaLT8JxniOB8qqa3QINVTLIEj6pFycKXrLFyZ3AgGOAMUgJsKM7y3bMKeuCOyFHbF1Nkohf3XBxMH7CFT4VH00CwbgDFnU'
+STRIPE_SECRET_KEY = 'sk_test_51O87oaLT8JxniOB80bGUGhBrO5bWuAmUBgEpY8IgksxBgegW4dMvfcQo1qNCeR1RVZF7c4GbXOItPAUah1dDhWF000NtQRH6Oj'

@@ -76,6 +76,8 @@ class Refund(models.Model):
     request_date = models.DateTimeField(default=datetime.now)
     reason = models.TextField()
     status = models.CharField(max_length=50)
+    def _str_(self):
+        return self.enrollment_id
 
 class StudentProgress(models.Model):
     enrollment_id = models.ForeignKey(Enrollment, on_delete=models.CASCADE)

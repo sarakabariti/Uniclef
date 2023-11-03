@@ -3,9 +3,16 @@ from django.contrib import messages, auth
 from django.contrib.auth.models import User
 from django_countries.data import COUNTRIES
 from datetime import datetime, timedelta
-from .forms import PaymentMethodForm, RefundRequestForm
+from django.urls import reverse
+from django.http import HttpResponseRedirect, JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from .models import User, Enrollment, Refund, PaymentMethod, PaymentHistory, Course #,Review
+
+import stripe
+import json
 
 def register(request):
     if request.method == 'POST':
@@ -83,105 +90,136 @@ def logout(request):
         return redirect('index')
 
 def dashboard(request):
-    return render(request, 'users/dashboard.html')
-
-
-def enroll_course(request, course_id):
-    if request.method == 'POST':
-        # Handle the course enrollment logic here
-        # Create an Enrollment object and handle payment
-
-        course = get_object_or_404(Course, id=course_id)
-        user = request.user 
-
-        # Create an Enrollment object
-        enrollment = Enrollment(course_id=course, user_id=user, enrolled_at=datetime.now(), amount_paid=course.price)
-
-        # Handle payment (add your payment processing logic here)
-        payment_form = PaymentMethodForm(request.POST)
-        if payment_form.is_valid():
-    
-            # If the payment is successful (payment_result is True), create a PaymentMethod
-            payment_type = payment_form.cleaned_data['payment_type']
-            card_number = payment_form.cleaned_data['card_number']
-            cardholder_name = payment_form.cleaned_data['cardholder_name']
-            expiration_month = payment_form.cleaned_data['expiration_month']
-            expiration_year = payment_form.cleaned_data['expiration_year']
-            cvv = payment_form.cleaned_data['cvv']
-
-            payment_method = PaymentMethod(
-                user_id=user,
-                payment_type=payment_type,
-                card_number=card_number,
-                cardholder_name=cardholder_name,
-                expiration_month=expiration_month,
-                expiration_year=expiration_year,
-                cvv=cvv
-            )
-            payment_method.save()
-
-            # Create a PaymentHistory record
-            payment_history = PaymentHistory(
-                user_id=user,
-                enrollment_id=enrollment,
-                date=datetime.now(),
-                amount=course.price,
-                status="Success"  # You can customize this based on payment status
-            )
-            payment_history.save()
-
-            # Update student progress and grant course access
-
-            messages.success(request, 'Successfully enrolled in the course')
-            return redirect('dashboard')
-        else:
-            messages.error(request, 'Payment information is not valid')
+    # Display enrolled courses on the dashboard
+    if request.user.is_authenticated:
+        enrollments = Enrollment.objects.filter(user_id=request.user.id)
+        enrolled_courses = [enrollment.course_id for enrollment in enrollments]
+        return render(request, 'users/dashboard.html', {'enrolled_courses': enrolled_courses})
     else:
-        # Display the course enrollment form
+        return redirect('login')
 
-        course = get_object_or_404(Course, id=course_id)
-        payment_form = PaymentMethodForm()
-
-        context = {
-            'course': course,
-            'payment_form': payment_form,
-        }
-        return render(request, 'courses/course.html', context)
-    
-def refund_request(request, enrollment_id):
+# Decorator to ensure that the view is accessible only by authenticated users
+@login_required
+@csrf_exempt
+def enroll_and_pay(request):
     if request.method == 'POST':
-        refund_form = RefundRequestForm(request.POST)
-        if refund_form.is_valid():
-            user = request.user 
-            enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+        
+        course_id = request.POST['course_id']
+        course = get_object_or_404(Course, id=course_id)
+        user = request.user
 
-            # Check if the user is the owner of the enrollment
-            if enrollment.user_id == user:
-                # Check if it's within 3 days of enrollment
-                three_days_ago = datetime.now() - timedelta(days=3)
-                if enrollment.enrolled_at >= three_days_ago:
-                    # Create a Refund object
-                    refund = Refund(
-                        user_id=user,
-                        enrollment_id=enrollment,
-                        request_date=datetime.now(),
-                        reason=refund_form.cleaned_data['reason'],
-                        status="Pending"  # Initial status
-                    )
-                    refund.save()
+        # Check if the user is already enrolled in the course
+        if Enrollment.objects.filter(course_id=course_id, user_id=user.id).exists():
+            messages.error(request, 'You are already enrolled in this course.')
+            return HttpResponseRedirect(reverse('dashboard'))
+        
+        # Retrieve the payment token from the client-side
+        token = request.POST['stripeToken']
 
-                    messages.success(request, 'Refund request submitted successfully.')
-                else:
-                    messages.error(request, 'You can only request a refund within 3 days of enrollment.')
+        try:
+            # Create a charge using the Stripe API
+            stripe.api_key = settings.STRIPE_SECRET_KEY
+            charge = stripe.Charge.create(
+                amount=int(course.price * 100),  # Convert to cents
+                currency='usd',
+                description=f'Payment for Course: {course.title}',
+                source=token,
+            )
+
+            # If the charge is successful, create the enrollment record
+            if charge.status == 'succeeded':
+                enrollment = Enrollment.objects.create(
+                    course_id=course_id,
+                    user_id=user.id,
+                    enrolled_at=datetime.now(),
+                    amount_paid=course.price
+                )
+                enrollment.save()
+
+                # Create records in PaymentMethod and PaymentHistory
+                payment_method = PaymentMethod.objects.create(
+                    user_id=user.id,
+                    payment_type='card',
+                    card_number=charge.payment_method_details.card.last4,
+                    cardholder_name=charge.payment_method_details.card.name,
+                    expiration_month=charge.payment_method_details.card.exp_month,
+                    expiration_year=charge.payment_method_details.card.exp_year,
+                    cvv=None
+                )
+                payment_method.save()
+
+                payment_history = PaymentHistory.objects.create(
+                    user_id=user.id,
+                    enrollment_id=enrollment.id,
+                    date=datetime.now(),
+                    amount=course.price,
+                    status="Success"
+                )
+                payment_history.save()  
+
+                # Return a success response to the client
+                return JsonResponse({'status': 'success', 'message': 'Payment successful'})
             else:
-                messages.error(request, 'Unauthorized refund request.')
+                return JsonResponse({'status': 'failed', 'message': 'Payment failed'})
+
+        except stripe.error.CardError:
+            return JsonResponse({'error': 'Payment failed. Please check your card information.'})
+        except Exception as e:
+            return JsonResponse({'error': 'An error occurred. Please contact support.'})
+
+    return render(request, {'course': course})
+
+def refund_request(request):
+    if request.method == 'POST':
+        enrollment_id = request.POST['enrollment_id']
+        reason = request.POST['message']
+
+        course = get_object_or_404(Course, id=request.POST['course_id'])
+
+        try:
+            enrollment_id = int(enrollment_id)
+        except (ValueError, TypeError):
+            # Handle the case where enrollment_id is not a valid integer
+            messages.error(request, 'Invalid enrollment ID.')
             return redirect('dashboard')
-    else:
-        refund_form = RefundRequestForm()
-        context = {
-            'refund_form': refund_form,
-        }
-        return render(request, 'users/dashboard.html', context)
+
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            messages.error(request, 'You must be logged in to request a refund.')
+            return redirect('login')
+        
+        # Check if user already made a refund request
+        has_requested = Refund.objects.filter(enrollment_id=enrollment_id).exists()
+        if has_requested:
+            messages.error(request, 'You already made a refund request.')
+            return redirect(reverse('course', args=[course.id]))
+
+        # Fetch the enrollment, if it exists
+        try:
+            enrollment = Enrollment.objects.get(id=enrollment_id, user_id=request.user.id, course_id=request.course.id)
+        except Enrollment.DoesNotExist:
+            messages.error(request, 'You are not enrolled in this course.')
+            return redirect('dashboard')  
+
+        # Check if it's within 3 days of enrollment
+        three_days_ago = datetime.now() - timedelta(days=3)
+        if enrollment.enrolled_at >= three_days_ago:
+            # Create a Refund object
+            refund = Refund(
+                enrollment_id=enrollment,
+                request_date=datetime.now(),
+                reason=reason,
+                status="Pending"  # Initial status
+            )
+            refund.save()
+
+            messages.success(request, 'Refund request submitted successfully.')
+        else:
+            messages.error(request, 'You can only request a refund within 3 days of enrollment.')
+
+        return redirect(reverse('course', args=[course.id]))
+
+    return redirect('dashboard') 
 
 def payment_history(request):
     user = request.user 
