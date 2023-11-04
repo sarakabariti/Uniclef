@@ -123,36 +123,34 @@
                   </button>
                 </div>
                 <div class="modal-body">
-                  <form id="enroll-form" data-course-id="{{ course.id }}">
+                  <form action="{% url 'enroll_and_pay' %}" id="enroll-form" method="post" data-course-id="{{ course.id }}">
                     {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="hidden" name="course_id" value="{{ course.id }}">
                     <div id="card-element">
-                      <input type="hidden" name="user_id" value="{{ user.id }}">
-                      <input type="hidden" name="course_id" value="{{ course.id }}">
-                      <input type="hidden" name="payment_type" value="{{ paymentmethod.payment_type }}">
-                      <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
-                      <input type="hidden" name="date" value="{{ paymenthistory.date }}">
-                      <div class="form-group">
-                        <label for="card_number" class="col-form-label">Card Number:</label>
-                        <input type="text" name="card_number" class="form-control" value="{{ paymentmethod.card_number }}" required>
+                    <!-- This element should remain empty when the page loads. -->
+                    </div>
+                    <div class="form-group">
+                      <label for="card_number" class="col-form-label">Card Number:</label>
+                      <input type="text" id="card_number" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="cardholder_name" class="col-form-label">Cardholder Name:</label>
+                      <input type="text" id="cardholder_name" class="form-control" required>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group col-md-6">
+                        <label for="expiration_month" class="col-form-label">Expiration Month:</label>
+                        <input type="text" id="expiration_month" class="form-control" required>
                       </div>
-                    <div class="form-group">
-                      <label for="cardholder_name" class="col-form-label">Cardholder Name::</label>
-                      <input type="text" name="cardholder_name" class="form-control" value="{{ paymentmethod.cardholder_name }}" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="expiration_month" class="col-form-label">Expiration Month:</label>
-                      <input autocomplete="off" type="text" id="expiration_month" class="form-control" maxlength="2" 
-                      pattern="[0-9]*" inputmode="numerical" placeholder="MM" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="expiration_year" class="col-form-label">Expiration Year:</label>
-                      <input autocomplete="off" type="text" id="expiration_year" class="form-control" maxlength="2" 
-                      pattern="[0-9]*" inputmode="numerical" placeholder="YY" required>
+                      <div class="form-group col-md-6">
+                        <label for="expiration_year" class="col-form-label">Expiration Year:</label>
+                        <input type="text" id="expiration_year" class="form-control" required>
+                      </div>
                     </div>
                     <div class="form-group">
                       <label for="cvv" class="col-form-label">CVV:</label>
-                      <input type="text" name="cvv" class="form-control" required>
-                    </div>
+                      <input type="text" id="cvv" class="form-control" required>
                     </div>
                     <!-- Used to display form errors. -->
                     <div id="card-errors" role="alert"></div>
@@ -163,118 +161,12 @@
               </div>
             </div>
           </div>
-          <script>
-            const monthInput = document.querySelector('#expiration_month');
-            const yearInput = document.querySelector('#expiration_year');
-          
-            const focusSibling = function(target, direction, callback) {
-              const nextTarget = target[direction];
-              nextTarget && nextTarget.focus();
-              // if a callback is supplied, we return the sibling target which has focus
-              callback && callback(nextTarget);
-            }
-          
-            monthInput.addEventListener('input', (event) => {
-              const value = event.target.value.toString();
-              // adds 0 to month user input like 9 -> 09
-              if (value.length === 1 && value > 1) {
-                event.target.value = "0" + value;
-              }
-              // bounds
-              if (value === "00") {
-                event.target.value = "01";
-              } else if (value > 12) {
-                event.target.value = "12";
-              }
-              // if we have a filled input, jump to the year input
-              if (2 <= event.target.value.length) {
-                focusSibling(event.target, "nextElementSibling");
-              }
-              event.stopImmediatePropagation();
-            });
-          
-            yearInput.addEventListener('keydown', (event) => {
-              // if the year is empty, jump to the month input
-              if (event.key === "Backspace" && event.target.selectionStart === 0) {
-                focusSibling(event.target, "previousElementSibling");
-                event.stopImmediatePropagation();
-              }
-            });
-          
-            const inputMatchesPattern = function(e) {
-              const { value, selectionStart, selectionEnd, pattern } = e.target;
-              
-              const character = String.fromCharCode(e.which);
-              const proposedEntry = value.slice(0, selectionStart) + character + value.slice(selectionEnd);
-              const match = proposedEntry.match(pattern);
-              
-              return e.metaKey || // cmd/ctrl
-                e.which <= 0 || // arrow keys
-                e.which == 8 || // delete key
-                (match && match[0] === match.input); // pattern regex isMatch - workaround for passing [0-9]* into RegExp
-            };
-          
-            document.querySelectorAll('input[data-pattern-validate]').forEach(el => el.addEventListener('keypress', e => {
-              if (!inputMatchesPattern(e)) {
-                return e.preventDefault();
-              }
-            }));
-          </script>
-          
-        
-        <button class="btn-primary btn-block btn-lg" data-toggle="modal" data-target="#inquiryModal">Request Refund</button>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Inquiry Modal -->
-  <div class="modal fade" id="inquiryModal" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="inquiryModalLabel">Request A Refund</h5>
-          <button type="button" class="close" data-dismiss="modal">
-            <span>&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form action="{% url 'refund_request' %}" method="POST">
-            {% csrf_token %}
-            {% if user.is_authenticated %}
-              <input type="hidden" name="user_id" value="{{ user.id }}">
-              <input type="hidden" name="course_id" value="{{ course.id }}">
-            {% else %}
-              <input type="hidden" name="user_id" value="0">
-            {% endif %}
-            <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
-            <input type="hidden" name="request_date" value="{{ refund.request_date}}">
-            <div class="form-group">
-              <label for="property_name" class="col-form-label">Course:</label>
-              <input type="text" name="course" class="form-control" value="{{ course.title }}">
-            </div>
-            <div class="form-group">
-              <label for="email" class="col-form-label">Email:</label>
-              <input type="email" name="email" class="form-control" {% if user.is_authenticated %} value="{{ user.email }}" {% endif %} required>
-            </div>
-            <div class="form-group">
-              <label for="message" class="col-form-label">Reason for requesting refund:</label>
-              <textarea name="message" class="form-control"></textarea>
-            </div>
-            <hr>
-            <input type="submit" value="Send" class="btn btn-block btn-secondary">
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-{% endblock %}
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+          <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://js.stripe.com/v3/"></script>
 <script>
     $(document).ready(function () {
-        var stripe = Stripe('settings.STRIPE_PUBLISHABLE_KEY');
-        var elements = stripe.elements();
+      var stripe = Stripe('pk_test_51O87oaLT8JxniOB8qqa3QINVTLIEj6pFycKXrLFyZ3AgGOAMUgJsKM7y3bMKeuCOyFHbF1Nkohf3XBxMH7CFT4VH00CwbgDFnU');
+      var elements = stripe.elements();
 
         var card = elements.create('card', {
             style: {
@@ -305,7 +197,7 @@
             }
         });
 
-    $('#enroll-submit').click(function (e) {
+    $('#enroll-form').on('submit', function(e) {
       e.preventDefault();
       var $form = $('#enroll-form');
       var courseId = $form.data('course-id');
@@ -318,10 +210,11 @@
               $('#enroll-submit').prop('disabled', false);
           } else {
               var token = result.token.id;
+              
               // Send the token to your server (via AJAX) for processing
               $.ajax({
                   type: 'POST',
-                  url: 'enroll_and_pay', 
+                  url: "{% url 'enroll_and_pay' %}",
                   data: {
                       'stripe_token': token,
                       'course_id': courseId,
@@ -331,6 +224,8 @@
                       // Handle the response from the server
                       if (data.success) {
                           alert('Payment successful!');
+                          window.location.href = "{% url 'dashboard' %}";
+                    
                       } else {
                           alert('Payment failed: ' + data.message);
                       }
@@ -347,5 +242,56 @@
   });
 });
 </script>
+          <hr>
+          <h5>Refund Policy</h5>
+          <p>Refunds are available within 3 days of enrollment.</p> 
+        
+        <button class="btn-primary btn-block btn-lg" data-toggle="modal" data-target="#inquiryModal">Request Refund</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Inquiry Modal -->
+  <div class="modal fade" id="inquiryModal" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="inquiryModalLabel">Request A Refund</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="{% url 'refund_request' %}" method="POST">
+            {% csrf_token %}
+            {% if user.is_authenticated %}
+              <input type="hidden" name="user_id" value="{{ user.id }}">
+              <input type="hidden" name="course_id" value="{{ course.id }}">
+            {% else %}
+              <input type="hidden" name="user_id" value="0">
+            {% endif %}
+            <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
+            <input type="hidden" name="request_date" value="{{ refund.request_date}}">
+            <div class="form-group">
+              <label for="title" class="col-form-label">Course:</label>
+              <input type="text" name="course" class="form-control" value="{{ course.title }}">
+            </div>
+            <div class="form-group">
+              <label for="email" class="col-form-label">Email:</label>
+              <input type="email" name="email" class="form-control" {% if user.is_authenticated %} value="{{ user.email }}" {% endif %} required>
+            </div>
+            <div class="form-group">
+              <label for="message" class="col-form-label">Reason for requesting refund:</label>
+              <textarea name="message" class="form-control"></textarea>
+            </div>
+            <hr>
+            <input type="submit" value="Send" class="btn btn-block btn-secondary">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
 </body>
 </html>

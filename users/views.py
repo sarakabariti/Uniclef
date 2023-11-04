@@ -114,7 +114,7 @@ def enroll_and_pay(request):
             return HttpResponseRedirect(reverse('dashboard'))
         
         # Retrieve the payment token from the client-side
-        token = request.POST['stripeToken']
+        token = request.POST['stripe_token']
 
         try:
             # Create a charge using the Stripe API
@@ -158,16 +158,16 @@ def enroll_and_pay(request):
                 payment_history.save()  
 
                 # Return a success response to the client
-                return JsonResponse({'status': 'success', 'message': 'Payment successful'})
+                return JsonResponse({'success': True, 'message': 'Payment successful'})
             else:
-                return JsonResponse({'status': 'failed', 'message': 'Payment failed'})
+                return JsonResponse({'success': False, 'message': 'Payment failed'})
 
         except stripe.error.CardError:
             return JsonResponse({'error': 'Payment failed. Please check your card information.'})
         except Exception as e:
             return JsonResponse({'error': 'An error occurred. Please contact support.'})
 
-    return render(request, {'course': course})
+    return render(request, 'courses/course.html', {'course': course})
 
 def refund_request(request):
     if request.method == 'POST':
