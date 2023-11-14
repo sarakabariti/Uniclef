@@ -4,12 +4,12 @@ from django.contrib.auth.models import User
 from django_countries.data import COUNTRIES
 from datetime import datetime, timedelta
 from django.urls import reverse
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
-from .models import User, Enrollment, Refund, PaymentMethod, PaymentHistory, Course #,Review
+from .models import User, Enrollment, Refund, PaymentMethod, Course #,Review
 
 import stripe
 import json
@@ -98,12 +98,41 @@ def dashboard(request):
     else:
         return redirect('login')
 
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    event = None
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+
+    # Handle the payment_intent.succeeded event
+    if event['type'] == 'payment_intent.succeeded':
+        print('Payment was successful!')
+
+    return HttpResponse(status=200)
+
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 # Decorator to ensure that the view is accessible only by authenticated users
 @login_required
 @csrf_exempt
 def enroll_and_pay(request):
     if request.method == 'POST':
-        
         course_id = request.POST['course_id']
         course = get_object_or_404(Course, id=course_id)
         user = request.user
@@ -117,54 +146,62 @@ def enroll_and_pay(request):
         token = request.POST['stripe_token']
 
         try:
-            # Create a charge using the Stripe API
+            # Set Stripe API key
             stripe.api_key = settings.STRIPE_SECRET_KEY
-            charge = stripe.Charge.create(
+            
+
+            # Create a PaymentIntent using the Stripe API
+            payment_intent = stripe.PaymentIntent.create(
                 amount=int(course.price * 100),  # Convert to cents
                 currency='usd',
                 description=f'Payment for Course: {course.title}',
-                source=token,
+                confirm=True,
+                payment_method_data={
+                    'type': 'card',
+                    'card': {'token': token}
+                },
+                automatic_payment_methods={
+                'enabled': True,
+                'allow_redirects': 'never'
+                }            
             )
+            logger.info(f'PaymentIntent created: {payment_intent}')
 
-            # If the charge is successful, create the enrollment record
-            if charge.status == 'succeeded':
-                enrollment = Enrollment.objects.create(
-                    course_id=course_id,
-                    user_id=user.id,
-                    enrolled_at=datetime.now(),
-                    amount_paid=course.price
-                )
-                enrollment.save()
-
-                # Create records in PaymentMethod and PaymentHistory
+            # If the charge is successful, create the paymentmethod and enrollment records
+            if payment_intent.status == 'succeeded':
+                # Fetch the charges associated with the payment_intent
+                charges = stripe.Charge.list(payment_intent=payment_intent.id)
+                # Access the first charge
+                charge = charges.data[0]
                 payment_method = PaymentMethod.objects.create(
-                    user_id=user.id,
+                    user_id=user,
                     payment_type='card',
                     card_number=charge.payment_method_details.card.last4,
-                    cardholder_name=charge.payment_method_details.card.name,
+                    cardholder_name=request.POST['cardholder_name'],
                     expiration_month=charge.payment_method_details.card.exp_month,
                     expiration_year=charge.payment_method_details.card.exp_year,
-                    cvv=None
                 )
-                payment_method.save()
 
-                payment_history = PaymentHistory.objects.create(
-                    user_id=user.id,
-                    enrollment_id=enrollment.id,
-                    date=datetime.now(),
-                    amount=course.price,
-                    status="Success"
+                enrollment = Enrollment.objects.create(
+                    course_id=course,
+                    user_id=user,
+                    enrolled_at=datetime.now(),
+                    amount_paid=course.price, 
+                    payment_method_id=payment_method,
+                    refunded=False
                 )
-                payment_history.save()  
 
                 # Return a success response to the client
                 return JsonResponse({'success': True, 'message': 'Payment successful'})
             else:
+                logger.info('Payment failed')
                 return JsonResponse({'success': False, 'message': 'Payment failed'})
-
+                
         except stripe.error.CardError:
+            logger.exception('Card error')
             return JsonResponse({'error': 'Payment failed. Please check your card information.'})
         except Exception as e:
+            logger.exception('An error occurred')
             return JsonResponse({'error': 'An error occurred. Please contact support.'})
 
     return render(request, 'courses/course.html', {'course': course})
@@ -222,10 +259,16 @@ def refund_request(request):
     return redirect('dashboard') 
 
 def payment_history(request):
-    user = request.user 
-    payment_history = PaymentHistory.objects.filter(user_id=user).order_by('-date')
+    if request.user.is_authenticated:
+        payment_history = Enrollment.objects.filter(user_id=request.user.id).values(
+            'course_id__title', 
+            'enrolled_at', 
+            'amount_paid', 
+            'payment_method_id__payment_type', 
+            'payment_method_id__card_number').order_by('-enrolled_at')
+        return render(request, 'users/payment_history.html', {'payment_history': payment_history})
+    else:
+        return redirect('login')
+    
 
-    context = {
-        'payment_history': payment_history,
-    }
-    return render(request, 'users/payment_history.html', context)
+    

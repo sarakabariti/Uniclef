@@ -127,31 +127,16 @@
                     {% csrf_token %}
                     <input type="hidden" name="user_id" value="{{ user.id }}">
                     <input type="hidden" name="course_id" value="{{ course.id }}">
-                    <div id="card-element">
+                    <div class="form-group">
+                      <label for="cardholder_name" class="col-form-label">Cardholder's Name:</label>
+                      <input type="text" id="cardholder_name" name="cardholder_name" class="form-control" value="{{ paymentmethod.cardholder_name }}" required>
+                    </div>
+                    <div id="card-element" class="form-group">
                     <!-- This element should remain empty when the page loads. -->
+
+
                     </div>
-                    <div class="form-group">
-                      <label for="card_number" class="col-form-label">Card Number:</label>
-                      <input type="text" id="card_number" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="cardholder_name" class="col-form-label">Cardholder Name:</label>
-                      <input type="text" id="cardholder_name" class="form-control" required>
-                    </div>
-                    <div class="form-row">
-                      <div class="form-group col-md-6">
-                        <label for="expiration_month" class="col-form-label">Expiration Month:</label>
-                        <input type="text" id="expiration_month" class="form-control" required>
-                      </div>
-                      <div class="form-group col-md-6">
-                        <label for="expiration_year" class="col-form-label">Expiration Year:</label>
-                        <input type="text" id="expiration_year" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label for="cvv" class="col-form-label">CVV:</label>
-                      <input type="text" id="cvv" class="form-control" required>
-                    </div>
+
                     <!-- Used to display form errors. -->
                     <div id="card-errors" role="alert"></div>
                     <hr>
@@ -201,6 +186,7 @@
       e.preventDefault();
       var $form = $('#enroll-form');
       var courseId = $form.data('course-id');
+      var cardholderName = $('#cardholder_name').val();
       $('#enroll-submit').prop('disabled', true);
   
       stripe.createToken(card).then(function (result) {
@@ -218,6 +204,7 @@
                   data: {
                       'stripe_token': token,
                       'course_id': courseId,
+                      'cardholder_name': cardholderName,
                       'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
                   },
                   success: function (data) {
@@ -225,7 +212,7 @@
                       if (data.success) {
                           alert('Payment successful!');
                           window.location.href = "{% url 'dashboard' %}";
-                    
+          
                       } else {
                           alert('Payment failed: ' + data.message);
                       }

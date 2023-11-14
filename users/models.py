@@ -44,6 +44,8 @@ class Enrollment(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE) 
     enrolled_at = models.DateTimeField(default=datetime.now, blank=True)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method_id = models.ForeignKey('PaymentMethod', on_delete=models.DO_NOTHING)
+    refunded = models.BooleanField(default=False)
     
     class Meta:
         indexes = [
@@ -90,39 +92,11 @@ class StudentProgress(models.Model):
             models.Index(fields=['enrollment_id']),
         ]
 class PaymentMethod(models.Model):
-    PAYMENT_TYPES = (
-        ('visa', 'Visa'),
-        ('mastercard', 'Mastercard'),
-        ('debit_card', 'Debit Card'),
-    )
-
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    payment_type = models.CharField(
-        max_length=20,
-        choices=PAYMENT_TYPES,
-        default='visa',
-        verbose_name=_("Payment Type")
-    )
+    payment_type = models.CharField(max_length=20,verbose_name=_("Payment Type"))
     card_number = models.CharField(max_length=16, verbose_name=_("Card Number"))
     cardholder_name = models.CharField(max_length=255, verbose_name=_("Cardholder Name"))
     expiration_month = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(12)],
-                                                        verbose_name=_("Expiration Month"))
+    verbose_name=_("Expiration Month"))
     expiration_year = models.PositiveSmallIntegerField(validators=[MinValueValidator(2023)],
-                                                       verbose_name=_("Expiration Year"))
-    cvv = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(100)],
-        verbose_name=_("CVV")
-    )
-
-    def __str__(self):
-        return f"{self.get_payment_type_display()} ending in {self.card_number[-4:]}"
-
-class PaymentHistory(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-    enrollment_id = models.ForeignKey(Enrollment, on_delete=models.DO_NOTHING, null=True)  
-    date = models.DateTimeField(auto_now_add=True, verbose_name=_("Enrollment Date"))
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Amount"))
-    status = models.CharField(max_length=50, verbose_name=_("Status"))
-
-    def __str__(self):
-        return f"Payment of ${self.amount} on {self.date} ({self.status})"
+    verbose_name=_("Expiration Year"))

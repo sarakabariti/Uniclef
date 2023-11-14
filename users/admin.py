@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from .models import User, Enrollment, Refund, StudentProgress, PaymentMethod, PaymentHistory
+from .models import User, Enrollment, Refund, StudentProgress, PaymentMethod
 
 
 @admin.register(User)
@@ -31,24 +31,31 @@ class UserAdmin(DjangoUserAdmin):
 
 @admin.register(Enrollment)
 class EnrollmentAdmin(admin.ModelAdmin):
-    list_display = ('course_id', 'user_id', 'enrolled_at', 'amount_paid')
+    list_display = ('id','course_id', 'user_id', 'enrolled_at', 'amount_paid')
+    list_display_links = ('id','course_id', 'user_id')
+    search_fields = ('id','course_id', 'user_id')
+    list_per_page = 25
 
 @admin.register(Refund)
 class RefundAdmin(admin.ModelAdmin):
-    list_display = ('enrollment_id', 'request_date', 'status')
-    search_fields = ('enrollment_id', 'request_date', 'reason', 'status')
+    list_display = ('id','enrollment_id', 'request_date', 'status')
+    list_display_links = ('id','enrollment_id')
+    search_fields = ('enrollment_id', 'request_date', 'status')
     list_per_page = 25
 
 @admin.register(StudentProgress)
 class StudentProgress(admin.ModelAdmin):
-    list_display = ('enrollment_id', 'total_tasks', 'remaining_tasks', 'total_score')
+    list_display = ('id','enrollment_id', 'total_tasks', 'remaining_tasks', 'total_score')
+    list_display_links = ('id','enrollment_id')
+    search_fields = ('enrollment_id', 'total_score')
+    list_per_page = 25
 
 @admin.register(PaymentMethod)
 class PaymentMethod(admin.ModelAdmin):
-    list_display = ('user_id', 'payment_type', 'expiration_month', 'expiration_year')
+    list_display = ('id','user_id', 'payment_type', 'expiration_month', 'expiration_year')
+    list_display_links = ('id','user_id')
+    search_fields = ('id','user_id', 'payment_type')
+    list_per_page = 25
 
-@admin.register(PaymentHistory)
-class PaymentHistory(admin.ModelAdmin):
-    list_display = ('enrollment_id', 'date', 'amount', 'status')
 
 
