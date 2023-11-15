@@ -2,10 +2,11 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django_countries.fields import CountryField
 from django.db import models, IntegrityError
-from datetime import datetime
+from django.utils import timezone
 from django.conf import settings
 from .managers import UserManager
 from django.utils.translation import gettext_lazy as _
+
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -25,8 +26,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     city = models.CharField(max_length=100)
     country_code = CountryField(settings.AUTH_USER_MODEL)
     profile_pic = models.ImageField(upload_to='photos/%Y/%m/%d', blank=True, null=True)
-    date_joined = models.DateTimeField(default=datetime.now)
-    last_active = models.DateTimeField(default=datetime.now, blank=True)
+    date_joined = models.DateTimeField(default=timezone.now)
+    last_active = models.DateTimeField(default=timezone.now, blank=True)
     is_staff = models.BooleanField(_("staff status"), default=False, help_text=_("Designates whether the user can log into this admin site."),)
     is_active = models.BooleanField(_("active"),default=True,help_text=_("Designates whether this user should be treated as active. ""Unselect this instead of deleting accounts."),)
 
@@ -42,7 +43,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Enrollment(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE) 
-    enrolled_at = models.DateTimeField(default=datetime.now, blank=True)
+    enrolled_at = models.DateTimeField(default=timezone.now, blank=True)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method_id = models.ForeignKey('PaymentMethod', on_delete=models.DO_NOTHING)
     refunded = models.BooleanField(default=False)
@@ -75,7 +76,7 @@ class Review(models.Model):
 
 class Refund(models.Model):
     enrollment_id = models.ForeignKey(Enrollment, on_delete=models.DO_NOTHING, null=True)
-    request_date = models.DateTimeField(default=datetime.now)
+    request_date = models.DateTimeField(default=timezone.now)
     reason = models.TextField()
     status = models.CharField(max_length=50)
     def _str_(self):

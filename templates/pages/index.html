@@ -5,6 +5,10 @@
 {% block title %} | Welcome {% endblock %}
 
 {% block content %}
+<br>
+  <!-- Alerts -->
+  {% include 'partials/_alerts.html' %}
+
 <!-- Showcase -->
 <section id="showcase">
     <div class="container text-center">
@@ -67,9 +71,7 @@
       </div>
     </div>
   </section>
-<br>
-  <!-- Alerts -->
-  {% include 'partials/_alerts.html' %}
+
 
   <!-- courses -->
   <section id="courses" class="py-5">

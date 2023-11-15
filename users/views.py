@@ -3,11 +3,15 @@ from django.contrib import messages, auth
 from django.contrib.auth.models import User
 from django_countries.data import COUNTRIES
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.urls import reverse
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.contrib.auth.password_validation import validate_password, password_validators_help_texts
+from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator
 
 from .models import User, Enrollment, Refund, PaymentMethod, Course #,Review
 
@@ -34,6 +38,25 @@ def register(request):
                 messages.error(request, 'There is already an account registered with that email')
                 return redirect('register')
             else:
+                # Validate email
+                try:
+                    EmailValidator()(email)
+                except ValidationError as e:
+                    messages.error(request, e.messages[0])
+                    return redirect('register')
+                
+                # Validate password
+                try:
+                    validate_password(password)
+                except ValidationError as e:
+                    messages.error(request, e.messages[0])
+                    return redirect('register')
+
+                # Check if password is same as email
+                if password == email:
+                    messages.error(request, 'Password cannot be the same as the email')
+                    return redirect('register')
+                
                 # Fetch the selected country using country_code
                 country = COUNTRIES.get(country_code)
                 if country:
@@ -63,6 +86,7 @@ def register(request):
         countries = COUNTRIES
         context = {
             'countries': countries,
+            'password_help_texts': password_validators_help_texts(),
         }
         return render(request, 'users/register.html', context)
 
@@ -185,7 +209,7 @@ def enroll_and_pay(request):
                 enrollment = Enrollment.objects.create(
                     course_id=course,
                     user_id=user,
-                    enrolled_at=datetime.now(),
+                    enrolled_at=timezone.now(),
                     amount_paid=course.price, 
                     payment_method_id=payment_method,
                     refunded=False
@@ -244,7 +268,7 @@ def refund_request(request):
             # Create a Refund object
             refund = Refund(
                 enrollment_id=enrollment,
-                request_date=datetime.now(),
+                request_date=timezone.now(),
                 reason=reason,
                 status="Pending"  # Initial status
             )
