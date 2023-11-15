@@ -26,12 +26,7 @@
               <div class="form-row">
                 <div class="col-md-4 mb-3">
                   <label class="sr-only">Keywords</label>
-                  <input type="text" name="keywords" class="form-control" placeholder="Keyword (Guitar, Piano, etc)">
-                </div>
-
-                <div class="col-md-4 mb-3">
-                  <label class="sr-only">Duration</label>
-                  <input type="text" name="duration" class="form-control" placeholder="Duration">
+                  <input type="text" name="keywords" class="form-control" placeholder="Keyword (Guitar, Piano, etc)" value="{{ values.keywords }}">
                 </div>
 
                 <div class="col-md-4 mb-3">
@@ -43,24 +38,46 @@
                     {% endfor %}
                   </select>
                 </div>
+
+                <div class="col-md-4 mb-3">
+                  <label class="sr-only">Category</label>
+                  <select name="category" class="form-control">
+                    <option selected="true" disabled="disabled">Category (All)</option>
+                    {% for key,value in category_choices.items %}
+                        <option value="{{ key }}" 
+                        {% if key == values.category %}
+                          selected
+                        {% endif %}
+                        >{{ value }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
               </div>
               <!-- Form Row 2 -->
               <div class="form-row">
                 <div class="col-md-6 mb-3">
-                  <label class="sr-only">categories</label>
-                  <select name="categories" class="form-control">
-                    <option selected="true" disabled="disabled">Categories (All)</option>
-                    {% for key,value in category_choices.items %}
-                      <option value="{{ key }}">{{ value }}</option>
-                    {% endfor %}
+                  <label class="sr-only">Duration</label>
+                  <select name="duration" class="form-control">
+                    <option selected="true" disabled="disabled">Max Duration (Any)</option>
+                    {% for key,value in duration_choices.items %}
+                        <option value="{{ key }}"
+                        {% if key == values.duration %}
+                          selected
+                        {% endif %}
+                        >{{ value }}</option>
+                      {% endfor %}
                   </select>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <select name="price" class="form-control" id="type">
+                  <select name="price" class="form-control">
                     <option selected="true" disabled="disabled">Max Price (Any)</option>
                     {% for key,value in price_choices.items %}
-                      <option value="{{ key }}">{{ value }}</option>
-                    {% endfor %}
+                        <option value="{{ key }}"
+                        {% if key == values.price %}
+                          selected
+                        {% endif %}
+                        >{{ value }}</option>
+                      {% endfor %}
                   </select>
                 </div>
               </div>

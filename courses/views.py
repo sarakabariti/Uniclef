@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from .choices import price_choices, category_choices, difficulty_choices
+from .choices import *
 
 from .models import Course
 
@@ -49,7 +49,7 @@ def search(request):
     if 'category' in request.GET:
         category = request.GET['category']
         if category:
-            queryset_list = queryset_list.filter(category__iexact=category)
+            queryset_list = queryset_list.filter(category__category_tag__iexact=category)
 
     # Price
     if 'price' in request.GET:
@@ -58,6 +58,7 @@ def search(request):
             queryset_list = queryset_list.filter(price__lte=price)
     
     context = {
+    'duration_choices': duration_choices,
     'difficulty_choices': difficulty_choices,
     'category_choices': category_choices,
     'price_choices': price_choices,

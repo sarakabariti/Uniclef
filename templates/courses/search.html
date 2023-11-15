@@ -19,7 +19,12 @@
 
               <div class="col-md-4 mb-3">
                 <label class="sr-only">Difficulty</label>
-                <input type="text" name="difficulty" class="form-control" placeholder="Difficulty" value="{{ values.difficulty }}">
+                <select name="difficulty" class="form-control">
+                  <option selected="true" disabled="disabled">Difficulty (All)</option>
+                  {% for key,value in difficulty_choices.items %}
+                    <option value="{{ key }}">{{ value }}</option>
+                  {% endfor %}
+                </select>
               </div>
 
               <div class="col-md-4 mb-3">
@@ -41,8 +46,8 @@
               <div class="col-md-6 mb-3">
                 <label class="sr-only">Duration</label>
                 <select name="duration" class="form-control">
-                  <option selected="true" disabled="disabled">Duration (Any)</option>
-                  {% for key,value in genre_choices.items %}
+                  <option selected="true" disabled="disabled">Max Duration (Any)</option>
+                  {% for key,value in duration_choices.items %}
                       <option value="{{ key }}"
                       {% if key == values.duration %}
                         selected
@@ -53,7 +58,7 @@
               </div>
               <div class="col-md-6 mb-3">
                 <select name="price" class="form-control">
-                  <option selected="true" disabled="disabled">Max Price (All)</option>
+                  <option selected="true" disabled="disabled">Max Price (Any)</option>
                   {% for key,value in price_choices.items %}
                       <option value="{{ key }}"
                       {% if key == values.price %}
@@ -107,7 +112,7 @@
                   <div class="course-heading text-center">
                     <h4 class="text-primary">{{ course.title }}</h4>
                     <p>
-                      <i class="fas fa-info text-secondary"></i> {{ course.difficulty }} {{ course.duration }} Weeks {{ course.category }}</p>
+                      <i class="fas fa-info text-secondary"></i> {{ course.difficulty }} {{ course.duration }} Weeks</p>
                   </div>
                   <hr>
                   <div class="row py-2 text-secondary">
@@ -124,8 +129,6 @@
                             <li>{{ category.category_tag }}</li>
                         {% endfor %}
                     </ul></div>
-                    <div class="col-6">
-                      <i class="fas fa-bars"></i> Difficulty: {{ course.difficulty }}</div>
                   </div>
                   <hr>
                   <div class="row py-2 text-secondary">

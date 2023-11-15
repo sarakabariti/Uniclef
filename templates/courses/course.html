@@ -51,7 +51,7 @@
             <div class="col-md-6">
               <ul class="list-group list-group-flush">
                 <li class="list-group-item text-secondary">
-                  <i class="fas fa-money-bill-alt"></i> Asking Price:
+                  <i class="fas fa-money-bill-alt"></i> Price:
                   <span class="float-right">${{ course.price | intcomma }}</span>
                 </li>
                 <li class="list-group-item text-secondary">
@@ -111,8 +111,12 @@
                 <h5 class="card-title">Enroll in this Course</h5>
             </div>
           </div>
+          {% if user.is_authenticated %}
           <button id="enroll-button" class="btn btn-primary btn-block btn-lg" data-toggle="modal" data-target="#enrollModal" data-course-id="{{ course.id }}">Enroll</button>
-         <!-- Payment Form -->
+          {% else %}
+          <button id="enroll-button" class="btn btn-primary btn-block btn-lg" onclick="alert('You need to be logged in to enroll in this course.');">Enroll</button>
+          {% endif %}
+          <!-- Payment Form -->
           <div class="modal fade" id="enrollModal" role="dialog">
             <div class="modal-dialog">
               <div class="modal-content">

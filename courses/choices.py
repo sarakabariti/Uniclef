@@ -15,6 +15,19 @@ category_choices = {
   'Sound Design':'Sound Design',
 }
 
+duration_choices = {
+  '1':'1 Week',
+  '2':'2 Weeks',
+  '3':'3 Weeks',
+  '4':'4 Weeks',
+  '5':'5 Weeks',
+  '6':'6 Weeks',
+  '7':'7 Weeks',
+  '8':'8 Weeks',
+  '9':'9 Weeks',
+  '10':'10+ Weeks',
+}
+
 price_choices = {
   '20':'€20',
   '30':'€30',
