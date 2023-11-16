@@ -43,7 +43,6 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th scope="col">#</th>
                   <th scope="col">Course</th>
                   <th scope="col">Actions</th>
                 </tr>
@@ -51,10 +50,9 @@
               <tbody>
                 {% for enrollment in enrollments %}
                   <tr>
-                    <td>{{ enrollment.id }}</td>
-                    <td>{{ enrollment.course.title }}</td>
+                    <td>{{ enrollment.course_id.title }}</td>
                     <td>
-                      <a class="btn btn-light" href="{% url 'course' enrollment.course.id %}">View Course</a>
+                      <a class="btn btn-light" href="{% url 'course' enrollment.course_id.id %}">View Course</a>
                       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#refundModal{{ enrollment.id }}">
                         Request Refund
                       </button>
@@ -90,18 +88,21 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form id="refund-request-form{{ enrollment.id }}" method="post" action="{% url 'refund_request' enrollment_id=enrollment.id %}">
+      <form id="refund-request-form{{ enrollment.id }}" method="POST" action="{% url 'refund_request' %}">
+        <input type="hidden" name="user_id" value="{{ user.id }}">
+        <input type="hidden" name="course_id" value="{{ enrollment.course_id.id }}">
+        <input type="hidden" name="request_date" value="{{ refund.request_date }}">
         {% csrf_token %}
         <div class="modal-body">
 
           <div class="form-group">
-            <label for="refund-reason{{ enrollment.id }}">Reason for Refund</label>
-            <input type="text" id="refund-reason{{ enrollment.id }}" name="reason" class="form-control" required>
+            <label for="reason{{ enrollment.id }}">Reason for Refund</label>
+            <input type="text" id="reason{{ enrollment.id }}" name="reason" class="form-control" required>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Submit Request</button>
+          <input type="submit" value="Send" class="btn btn-block btn-secondary">
         </div>
       </form>
     </div>

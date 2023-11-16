@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages, auth
 from django.contrib.auth.models import User
 from django_countries.data import COUNTRIES
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
 from django.urls import reverse
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
@@ -117,8 +117,7 @@ def dashboard(request):
     # Display enrolled courses on the dashboard
     if request.user.is_authenticated:
         enrollments = Enrollment.objects.filter(user_id=request.user.id)
-        enrolled_courses = [enrollment.course_id for enrollment in enrollments]
-        return render(request, 'users/dashboard.html', {'enrolled_courses': enrolled_courses})
+        return render(request, 'users/dashboard.html', {'enrollments': enrollments})
     else:
         return redirect('login')
 
@@ -148,9 +147,6 @@ def stripe_webhook(request):
     return HttpResponse(status=200)
 
 
-import logging
-
-logger = logging.getLogger(__name__)
 
 # Decorator to ensure that the view is accessible only by authenticated users
 @login_required
@@ -189,7 +185,7 @@ def enroll_and_pay(request):
                 'allow_redirects': 'never'
                 }            
             )
-            logger.info(f'PaymentIntent created: {payment_intent}')
+            
 
             # If the charge is successful, create the paymentmethod and enrollment records
             if payment_intent.status == 'succeeded':
@@ -218,52 +214,44 @@ def enroll_and_pay(request):
                 # Return a success response to the client
                 return JsonResponse({'success': True, 'message': 'Payment successful'})
             else:
-                logger.info('Payment failed')
                 return JsonResponse({'success': False, 'message': 'Payment failed'})
                 
         except stripe.error.CardError:
-            logger.exception('Card error')
             return JsonResponse({'error': 'Payment failed. Please check your card information.'})
         except Exception as e:
-            logger.exception('An error occurred')
             return JsonResponse({'error': 'An error occurred. Please contact support.'})
 
     return render(request, 'courses/course.html', {'course': course})
 
+@login_required
 def refund_request(request):
     if request.method == 'POST':
-        enrollment_id = request.POST['enrollment_id']
-        reason = request.POST['message']
+        user_id = request.POST['user_id']
+        course_id = request.POST['course_id']
+        reason = request.POST['reason']
+        course = get_object_or_404(Course, id=course_id)
 
-        course = get_object_or_404(Course, id=request.POST['course_id'])
-
+        # Fetch the enrollment, if it exists
         try:
-            enrollment_id = int(enrollment_id)
-        except (ValueError, TypeError):
-            # Handle the case where enrollment_id is not a valid integer
-            messages.error(request, 'Invalid enrollment ID.')
-            return redirect('dashboard')
+            enrollment = Enrollment.objects.get(user_id=user_id, course_id=course_id)
+        except Enrollment.DoesNotExist:
+            messages.error(request, 'You are not enrolled in this course.')
+            return redirect('dashboard')  
 
         # Check if the user is authenticated
         if not request.user.is_authenticated:
             messages.error(request, 'You must be logged in to request a refund.')
             return redirect('login')
         
+        
         # Check if user already made a refund request
-        has_requested = Refund.objects.filter(enrollment_id=enrollment_id).exists()
+        has_requested = Refund.objects.filter(enrollment_id=enrollment.id).exists()
         if has_requested:
-            messages.error(request, 'You already made a refund request.')
+            messages.error(request, 'You already made a refund request for this course.')
             return redirect(reverse('course', args=[course.id]))
 
-        # Fetch the enrollment, if it exists
-        try:
-            enrollment = Enrollment.objects.get(id=enrollment_id, user_id=request.user.id, course_id=request.course.id)
-        except Enrollment.DoesNotExist:
-            messages.error(request, 'You are not enrolled in this course.')
-            return redirect('dashboard')  
-
         # Check if it's within 3 days of enrollment
-        three_days_ago = datetime.now() - timedelta(days=3)
+        three_days_ago = timezone.now() - timedelta(days=3)
         if enrollment.enrolled_at >= three_days_ago:
             # Create a Refund object
             refund = Refund(

@@ -52,6 +52,9 @@ class Enrollment(models.Model):
         indexes = [
             models.Index(fields=['user_id', 'course_id']),
         ]
+
+    def __str__(self):
+        return str(self.id)
 '''
 class Review(models.Model):
     enrollment_id = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
