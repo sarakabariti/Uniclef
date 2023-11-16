@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'instructors.apps.InstructorsConfig',
     'users.apps.UsersConfig',
     'django_countries',
+    'django_seed',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
