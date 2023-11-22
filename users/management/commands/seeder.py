@@ -212,9 +212,14 @@ class Command(BaseCommand):
         else:
 
             for _ in range(3):
+                # Check if there are still enrollment_ids left
+                if not enrollment_ids:
+                    break
                 last_pk_refund += 1
                 # Select a random 'enrollment_id' from the list
                 enrollment_id = random.choice(enrollment_ids)
+                # Remove the selected 'enrollment_id' from the list
+                enrollment_ids.remove(enrollment_id)
 
                 refund_data = {
                     'model': 'users.refund',
